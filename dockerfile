@@ -18,6 +18,10 @@ RUN apt-get update && \
     libappindicator3-1 \
     libasound2 \
     chromium \
+    antiword \
+    tesseract-ocr \
+    libtesseract-dev \
+    libreoffice \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
