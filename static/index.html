@@ -1,1 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Skills Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .search-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .centered {
+            margin-top: 20vh;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2563eb;
+        }
+
+        button:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .results {
+            display: none;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .skill-tag {
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .course-card {
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .course-card:hover {
+            background-color: #f1f5f9;
+        }
+
+        .course-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .platform {
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .course-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .course-link:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .courses-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .search-container.with-results {
+                width: 100%;
+            }
+
+            .search-container:not(.with-results) {
+                width: 66%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="search-container centered">
+            <h1 style="text-align: center;">Find Skills & Courses by Job Role</h1>
+            <div class="search-box">
+                <input type="text" id="jobInput" placeholder="Enter job role (e.g., Data Scientist)">
+                <button id="searchBtn">Search</button>
+            </div>
+            <div class="error" id="errorMsg"></div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="card">
+                <h2>Skills for <span id="jobTitle"></span></h2>
+                <div class="skills-container" id="skillsContainer"></div>
+            </div>
+
+            <div class="card">
+                <h2>Recommended Courses</h2>
+                <div class="courses-grid" id="coursesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const jobInput = document.getElementById('jobInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const results = document.getElementById('results');
+        const skillsContainer = document.getElementById('skillsContainer');
+        const coursesContainer = document.getElementById('coursesContainer');
+        const jobTitle = document.getElementById('jobTitle');
+        const errorMsg = document.getElementById('errorMsg');
+        const searchContainer = document.querySelector('.search-container');
+
+        jobInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchJobs();
+            }
+        });
+
+        searchBtn.addEventListener('click', searchJobs);
+
+        async function searchJobs() {
+            const jobRole = jobInput.value.trim();
+            if (!jobRole) return;
+
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Searching...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/skill-course-extraction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        job_role: jobRole
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data); // Add this log
+
+                displayResults(data.result);
+                searchContainer.classList.remove('centered');
+                searchContainer.classList.add('with-results');
+                results.style.display = 'block';
+            } catch (err) {
+                console.error('Error:', err); // Add this log
+                errorMsg.textContent = 'Failed to fetch data. Please try again.';
+                errorMsg.style.display = 'block';
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search';
+            }
+        }
+
+        function displayResults(data) {
+            console.log('Display Results Data:', data); // Add this log
+            jobTitle.textContent = data.job_role;
+
+            // Display skills
+            if (data.trending_skills && Array.isArray(data.trending_skills)) {
+                skillsContainer.innerHTML = data.trending_skills
+                    .map(skill => `<div class="skill-tag">${skill}</div>`)
+                    .join('');
+            }
+
+            // Display courses with check for existence
+            if (data.courses && Array.isArray(data.courses)) {
+                coursesContainer.innerHTML = data.courses
+                    .map(course => `
+                <div class="course-card">
+                    <div class="course-title">${course.course_title || 'No Title'}</div>
+                    <div class="platform">Platform: ${course.platform || 'Unknown'}</div>
+                    ${course.url ? `<a href="${course.url}" target="_blank" class="course-link">View Course →</a>` : ''}
+                </div>
+            `)
+                    .join('');
+            } else {
+                console.log('No courses data found or invalid format'); // Add this log
+                coursesContainer.innerHTML = '<div class="course-card">No courses available</div>';
+            }
+        }
+    </script>
+</body>
+
+</html>
