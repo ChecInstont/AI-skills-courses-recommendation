@@ -37,7 +37,7 @@ async def upload_resume_file(file: UploadFile = File(...)):
         file_name = file.filename
         file = await file.read()
         resume_parser = ResumeParser(file=file,file_name=file_name)
-        response = resume_parser.parse_resume()
+        response = await resume_parser.parse_resume()
     except Exception as e:
         response = {"response":{"error":str(e)},"status_code":500}
     finally:
