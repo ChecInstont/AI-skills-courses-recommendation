@@ -3,7 +3,7 @@ import logging
 import json
 import re
 from app.utils.llm import llm_model
-from app.resume.prompt import job_role
+from app.utils.prompts import job_role
 
 from dotenv import load_dotenv
 load_dotenv()
