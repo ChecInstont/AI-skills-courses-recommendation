@@ -8,9 +8,11 @@ load_dotenv()
 
 
 
-def gemini_model(prompt):
+async def gemini_model(prompt):
     # Set your Gemini API key (replace with your actual API key)
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+    response = {}
     
     # URL endpoint for the Gemini model
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
@@ -34,7 +36,8 @@ def gemini_model(prompt):
     }
     
     # Make the POST request
-    response = requests.post(url, headers=headers, json=data)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=data)
     
     # Check response status and return result
     if response.status_code == 200:
