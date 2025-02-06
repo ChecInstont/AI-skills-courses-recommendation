@@ -86,7 +86,7 @@ async def job_role(file: UploadFile = File(...)):
         file_name = file.filename
         file = await file.read()
         resume_parser = ResumeParser(file=file,file_name=file_name)
-        parsed_text = resume_parser.parse_resume()
+        parsed_text = await resume_parser.parse_resume()
         job_role = parsed_text.get("parsed_resume",{}).get("job_role","")
         result = await extract_skills_courses(job_role=job_role)
         response = {"response":result,"status_code":200}
