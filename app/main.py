@@ -8,14 +8,26 @@ from fastapi.requests import Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from app.google_search import google_search_results
-from app.llm import llm_response
+from app.utils.llm import llm_response
 from app.resume.extract_resume import ResumeParser
+from app.resume.predict_job_role import get_job_role
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins; adjust as needed
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 
 templates = Jinja2Templates(directory="static")
 
@@ -75,8 +87,7 @@ async def job_role(file: UploadFile = File(...)):
         file = await file.read()
         resume_parser = ResumeParser(file=file,file_name=file_name)
         parsed_text = resume_parser.parse_resume()
-        response = get_job_role(parsed_text)
-        job_role = response.get("job_role)
+        job_role = parsed_text.get("parsed_resume",{}).get("job_role","")
         result = await extract_skills_courses(job_role=job_role)
         response = {"response":result,"status_code":200}
     except Exception as e:

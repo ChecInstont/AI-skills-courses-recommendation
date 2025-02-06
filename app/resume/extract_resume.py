@@ -5,7 +5,7 @@ import json
 import re
 
 
-from app.utils.file_converstions import read_docx, read_pdf
+from app.utils.file_conversions import read_docx, read_pdf
 from app.utils.llm import llm_model
 from app.utils.prompts import resume_prompt as resume_parser_prompt
 

@@ -3,8 +3,10 @@ import json
 import re
 import os
 
+from langchain_google_genai import ChatGoogleGenerativeAI
 from app.utils.prompt_template import gemini_model
 from app.utils.prompts import skills_courses_template
+
 from dotenv import load_dotenv
 load_dotenv()
 

@@ -54,6 +54,7 @@ resume_text
 * **experience:** A list of the candidate's work experience, including job title, company, and dates of employment. 
 * **education:** A list of the candidate's education, including degree, institution, and dates of attendance.
 * **skills:** A list of the candidate's skills.
+* **job_role:** current job role which candidate is working present.
 
 **Example of Expected JSON Output:**
 
@@ -72,7 +73,8 @@ resume_text
   ],
   "skills": [
     "Python", "Java", "JavaScript", "SQL", "Machine Learning"
-  ]
+  ],
+  "job_role":"Software Engineer"
 }
 
 
@@ -110,5 +112,41 @@ resume_json
   "job_role":"Associate Software Engineer",
   "industry":"Software/IT"
 }
+
+"""
+
+skills_courses_template = """
+
+Your task is extract expected json based on the given array of google search results.
+
+* **Search Results: {search_results}
+
+* **Job Role: {job_role}
+
+* **Instructions:
+
+* Provide response based on your ability.
+
+Do not include Extra Words or symbols which is irrelevant.
+
+* **Expected Output:
+
+{
+    "job_role": "Software Developer",
+    "year": 2025,
+    "trending_skills": ["Artificial Intelligence", "Machine Learning", "Software Engineering"],
+    "courses": [
+      {
+        "course_title": "Machine Learning Specialization",
+        "platform": "Coursera",
+        "url": "https://www.coursera.org/specializations/machine-learning"
+      },
+      {
+        "course_title": "Advanced Software Engineering",
+        "platform": "Udemy",
+        "url": "https://www.udemy.com/course/software-engineering/"
+      }
+    ]
+  }
 
 """
