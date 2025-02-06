@@ -3,6 +3,7 @@ import logging
 import json
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
+from app.utils.prompts import skills_courses_template
 
 load_dotenv()
 
@@ -14,44 +15,7 @@ if not api_key:
 
 llm_model = ChatGoogleGenerativeAI(model=model, api_key=api_key)
 
-
-template = """
-
-Your task is extract expected json based on the given array of google search results.
-
-* **Search Results: {search_results}
-
-* **Job Role: {job_role}
-
-* **Instructions:
-
-* Provide response based on your ability.
-
-Do not include Extra Words or symbols which is irrelevant.
-
-* **Expected Output:
-
-{
-    "job_role": "Software Developer",
-    "year": 2025,
-    "trending_skills": ["Artificial Intelligence", "Machine Learning", "Software Engineering"],
-    "courses": [
-      {
-        "course_title": "Machine Learning Specialization",
-        "platform": "Coursera",
-        "url": "https://www.coursera.org/specializations/machine-learning"
-      },
-      {
-        "course_title": "Advanced Software Engineering",
-        "platform": "Udemy",
-        "url": "https://www.udemy.com/course/software-engineering/"
-      }
-    ]
-  }
-
-"""
-
-async def llm_response(job_role,search_results,template=template,llm_model=llm_model):
+async def llm_response(job_role,search_results,template=skills_courses_template,llm_model=llm_model):
     response = {}
     try:
         search_results = str(search_results)
