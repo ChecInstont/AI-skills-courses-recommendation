@@ -18,17 +18,17 @@ class ResumeParser():
         self.result = None
         self.response = None
     
-    def parse_resume(self):
+    async def parse_resume(self):
         file = self.file
         file_extension = self.file_name.split(".")[1]
         if file_extension ==".pdf" or file_extension == "pdf":
            self.result = read_pdf(self.file)
            prompt = resume_parser_prompt.replace("resume_text",self.result)
-           self.result = llm_model(prompt)
+           self.result = await llm_model(prompt)
         elif file_extension == ".docx" or file_extension == "docx":
             self.result = read_docx(self.file)
             prompt = resume_parser_prompt.replace("resume_text",self.result)
-            self.result = llm_model(prompt)
+            self.result = await llm_model(prompt)
         else:
             self.result = None
         
