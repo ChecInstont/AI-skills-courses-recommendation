@@ -38,7 +38,7 @@ async def get_status():
 
 @app.get("/health")
 async def get_health():
-    return JSONResponse(content={"health":"Ok"},status_code=200)
+    return JSONResponse(content={"health":"Ok!"},status_code=200)
 
 
 
