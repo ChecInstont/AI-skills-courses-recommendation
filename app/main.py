@@ -87,8 +87,11 @@ async def job_role(file: UploadFile = File(...)):
         file = await file.read()
         resume_parser = ResumeParser(file=file,file_name=file_name)
         parsed_text = await resume_parser.parse_resume()
-        job_role = parsed_text.get("parsed_resume",{}).get("job_role","")
-        result = await extract_skills_courses(job_role=job_role)
+        job_role = parsed_text.get("response",{}).get("parsed_resume",{}).get("job_role","")
+        if job_role:
+            result = await extract_skills_courses(job_role=job_role)
+        else:
+            result = {"message":"Seems like you have not yet started working!"}
         response = {"response":result,"status_code":200}
     except Exception as e:
         response = {"response":{"error":str(e)},"status_code":500}

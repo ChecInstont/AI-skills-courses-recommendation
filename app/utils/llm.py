@@ -14,7 +14,7 @@ async def gemini_llm(input):
     response = await gemini_model(input)
     response = response["candidates"][0]["content"]["parts"][0]["text"]
     # response = gemini_chain.run(input_json)
-    logging.info(f"Gemini response: {response}")
+    # logging.info(f"Gemini response: {response}")
     return response
 
 

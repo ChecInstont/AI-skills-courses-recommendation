@@ -54,7 +54,7 @@ resume_text
 * **experience:** A list of the candidate's work experience, including job title, company, and dates of employment. 
 * **education:** A list of the candidate's education, including degree, institution, and dates of attendance.
 * **skills:** A list of the candidate's skills.
-* **job_role:** current job role which candidate is working present.
+* **job_role:** current job role which candidate is working present only if exist.
 
 **Example of Expected JSON Output:**
 

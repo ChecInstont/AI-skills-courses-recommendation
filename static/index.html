@@ -163,11 +163,89 @@
                 margin-right: auto;
             }
         }
+            .tabs {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+        padding: 12px 24px;
+        background-color: #e5e7eb;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .tab.active {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .file-upload-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .file-upload-box {
+        border: 2px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 40px 20px;
+        margin: 20px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-box:hover {
+        border-color: #3b82f6;
+        background-color: #f8fafc;
+    }
+
+    .file-upload-box.dragover {
+        border-color: #3b82f6;
+        background-color: #f0f9ff;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .selected-file {
+        margin-top: 10px;
+        color: #64748b;
+    }
+
+    .success-message {
+        background-color: #dcfce7;
+        color: #166534;
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 10px;
+        display: none;
+    }
     </style>
 </head>
 
 <body>
     <div class="container">
+        <div class="tabs">
+            <button class="tab active" data-tab="search">Search by Job Role</button>
+            <button class="tab" data-tab="resume">Upload Resume</button>
+        </div>
+        <div id="searchTab" class="tab-content active">
         <div class="search-container centered">
             <h1 style="text-align: center;">Find Skills & Courses by Job Role</h1>
             <div class="search-box">
@@ -179,13 +257,43 @@
 
         <div class="results" id="results">
             <div class="card">
-                <h2>Skills for <span id="jobTitle"></span></h2>
+                <h2>Skills for <span id="jobTitle">Your Role</span></h2>
                 <div class="skills-container" id="skillsContainer"></div>
             </div>
 
             <div class="card">
                 <h2>Recommended Courses</h2>
                 <div class="courses-grid" id="coursesContainer"></div>
+            </div>
+        </div>
+    </div>
+        <div id="resumeTab" class="tab-content">
+            <div class="file-upload-container">
+                <h2>Upload Your Resume</h2>
+                <div class="file-upload-box" id="dropZone">
+                    <div style="font-size: 40px; color: #64748b; margin-bottom: 10px;">📄</div>
+                    <p>Drag and drop your PDF resume here or click to browse</p>
+                    <p style="color: #64748b; font-size: 14px;">Only PDF files are allowed</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf">
+                </div>
+                <div id="selectedFile" class="selected-file"></div>
+                <br>
+                <div id="successMessage" class="success-message"></div>
+                <br><br>
+                <button id="uploadBtn" style="display: none;">Upload Resume</button>
+                <br>
+            </div>
+            
+            <div class="results" id="resumeResults" style="display: none;">
+                <div class="card">
+                    <h2>Skills for <span id="jobTitle">Your Role</span></h2>
+                    <div class="skills-container" id="resumeSkillsContainer"></div>
+                </div>
+        
+                <div class="card">
+                    <h2>Recommended Courses</h2>
+                    <div class="courses-grid" id="resumeCoursesContainer"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -199,6 +307,18 @@
         const jobTitle = document.getElementById('jobTitle');
         const errorMsg = document.getElementById('errorMsg');
         const searchContainer = document.querySelector('.search-container');
+
+                // Tab switching
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const selectedFile = document.getElementById('selectedFile');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const successMessage = document.getElementById('successMessage');
+        const resumeResults = document.getElementById('resumeResults');
+        const resumeSkillsContainer = document.getElementById('resumeSkillsContainer');
+        const resumeCoursesContainer = document.getElementById('resumeCoursesContainer');
 
         jobInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -275,6 +395,118 @@
                 coursesContainer.innerHTML = '<div class="course-card">No courses available</div>';
             }
         }
+
+    // Tab switching
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            tab.classList.add('active');
+            document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
+        });
+    });
+
+    // File upload handling
+    fileInput.addEventListener('change', handleFileSelect);
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop handlers
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        handleFile(file);
+    });
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        handleFile(file);
+    }
+
+    function handleFile(file) {
+        if (file) {
+            if (file.type === 'application/pdf') {
+                selectedFile.textContent = `Selected file: ${file.name}`;
+                uploadBtn.style.display = 'inline-block';
+                successMessage.style.display = 'none';
+                uploadBtn.onclick = () => uploadResume(file);
+            } else {
+                selectedFile.textContent = 'Please select a PDF file only';
+                uploadBtn.style.display = 'none';
+            }
+        }
+    }
+
+    async function uploadResume(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Uploading...';
+
+        try {
+            const response = await fetch('/api/skill-course-extraction/resume', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
+
+            const data = await response.json();
+            console.log('Resume Upload Response:', data);
+
+            // Display results
+            displayResumeResults(data);
+            successMessage.textContent = 'Resume uploaded successfully!';
+            successMessage.style.display = 'block';
+            resumeResults.style.display = 'block';
+        } catch (error) {
+            console.error('Error:', error);
+            successMessage.textContent = 'Failed to upload resume. Please try again.';
+            successMessage.style.display = 'block';
+            successMessage.style.backgroundColor = '#fee2e2';
+            successMessage.style.color = '#991b1b';
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload Resume';
+        }
+    }
+
+    function displayResumeResults(data) {
+        jobTitle.textContent = "Your Role"
+        if (data.trending_skills && Array.isArray(data.trending_skills)) {
+            jobTitle.textContent = data.job_role;
+            resumeSkillsContainer.innerHTML = data.trending_skills
+                .map(skill => `<div class="skill-tag">${skill}</div>`)
+                .join('');
+        }
+
+        if (data.courses && Array.isArray(data.courses)) {
+            resumeCoursesContainer.innerHTML = data.courses
+                .map(course => `
+                    <div class="course-card">
+                        <div class="course-title">${course.course_title || 'No Title'}</div>
+                        <div class="platform">Platform: ${course.platform || 'Unknown'}</div>
+                        ${course.url ? `<a href="${course.url}" target="_blank" class="course-link">View Course →</a>` : ''}
+                    </div>
+                `)
+                .join('');
+        } else {
+            resumeCoursesContainer.innerHTML = '<div class="course-card">No courses available</div>';
+        }
+    }
     </script>
 </body>
 
